@@ -38,10 +38,22 @@ def get_args_parser():
 
     return parser
 
+def set_seed_for_gpu(seed=42):
+    import os, random, numpy as np, tensorflow as tf
+    os.environ['PYTHONHASHSEED'] = str(seed)
+    os.environ['TF_DETERMINISTIC_OPS'] = '1'
+    random.seed(seed)
+    np.random.seed(seed)
+    tf.random.set_seed(seed)
+    tf.config.threading.set_intra_op_parallelism_threads(1)
+    tf.config.threading.set_inter_op_parallelism_threads(1)
+
 def main(args):
 
     if args.debug:
         ct_config.debug = True
+
+    set_seed_for_gpu()
 
     job_dir = os.path.dirname(os.path.realpath(__file__))
     print(f'job dir: {job_dir}')

@@ -22,12 +22,12 @@ class CTMask():
         self.mask_ratio = 0.75
         self.num_mask = int(self.num_patches * self.mask_ratio)
 
-    def mask(self, img):
+    def mask(self, img, print_sample=False):
         # image_slice = imgs[index, ..., 0]
         image_slice = img
         image_tensor = torch.tensor(image_slice)
 
-        if debug:
+        if debug and print_sample:
             plt.imshow(image_slice, cmap='gray')
             plt.title("Slice 0 of Train data _before_ masking")
             plt.show()

@@ -46,16 +46,18 @@ class UNETRunner:
             epoch_num = finetune_epochs
             model_name = f"UNet_Model/saved_models/unet_finetune_ct_liver_{number_of_ct_patients}_{epoch_num}.keras"
             file_history_name = f"UNet_Model/saved_models/unet_finetune_ct_history_{number_of_ct_patients}_{epoch_num}"
+            self.pipeline.save(model_name)
+            self.pipeline.save_training_history(self.history, file_history_name, format="json")
+            history_dict = self.pipeline.load_training_history(file_history_name, format="json")
+            self.plot_training_history(history_dict, metrics=("loss", "dice_coef", "iou_metric"))
         else:
             epoch_num = epochs
-            model_name = f"UNet_Model/saved_models/unet_ssl_ct_liver_{number_of_ct_patients}_{epoch_num}.keras"
-            file_history_name = f"UNet_Model/saved_models/unet_ssl_ct_history_{number_of_ct_patients}_{epoch_num}"
-
-        self.pipeline.save(model_name)
-        self.pipeline.save_training_history(self.history, file_history_name, format="json")
-
-        history_dict = self.pipeline.load_training_history(file_history_name, format="json")
-        self.plot_training_history(history_dict, metrics=("loss", "dice_coef", "iou_metric"))
+            model_name = f"UNet_Model/saved_models/encoder_ssl_ct_liver_{number_of_ct_patients}_{epoch_num}.keras"
+            file_history_name = f"UNet_Model/saved_models/encoder_ssl_ct_history_{number_of_ct_patients}_{epoch_num}"
+            self.pipeline.encoder.save(model_name)
+            self.pipeline.save_training_history(self.history, file_history_name, format="json")
+            history_dict = self.pipeline.load_training_history(file_history_name, format="json")
+            self.plot_training_history(history_dict, metrics=("loss", "dice_coef", "iou_metric"))
 
 
     def load_model(self, finetune=False):
@@ -65,7 +67,7 @@ class UNETRunner:
             model_name = f"UNet_Model/saved_models/unet_finetune_ct_liver_{number_of_ct_patients}_{epoch_num}.keras"
         else:
             epoch_num = epochs
-            model_name = f"UNet_Model/saved_models/unet_ssl_ct_liver_{number_of_ct_patients}_{epoch_num}.keras"
+            model_name = f"UNet_Model/saved_models/encoder_ssl_ct_liver_{number_of_ct_patients}_{epoch_num}.keras"
 
         self.pipeline = UNetSegmentationPipeline.load(model_name)
         self.pipeline.summary()

@@ -287,8 +287,12 @@ class CTDataset(Dataset):
     def mask_and_save(self):
         masker = CTMask()
         for idx, img in enumerate(self.X_train):
+            if idx % 500 == 0:
+                print_sample = True
+            else:
+                print_sample = False
             img = img.squeeze()
-            masked_img = masker.mask(img)
+            masked_img = masker.mask(img, print_sample)
             self.X_train_masked.append(masked_img)
             if idx % 500 == 0:
                 print(f'Train Processed {idx}/{len(self.X_train)}')

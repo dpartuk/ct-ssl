@@ -1,6 +1,8 @@
 import os
 import numpy as np
 import matplotlib.pyplot as plt
+import tensorflow as tf
+from sklearn.metrics import precision_score, recall_score, accuracy_score, fbeta_score
 from collections import defaultdict
 from ct_config import debug
 
@@ -19,14 +21,55 @@ class SegmentationEvaluator:
         self.threshold = threshold
         self.epsilon = epsilon
 
+    def compute_global_metrics(self, y_true, y_pred, beta=2):
+        """
+        Computes accuracy, precision, recall, and F-beta across all pixels.
+
+        Args:
+            y_true (np.ndarray): Ground truth masks, shape (N, H, W, 1)
+            y_pred (np.ndarray): Binary predicted masks, shape (N, H, W, 1)
+            beta (float): Beta value for F-beta score. Use beta=2 for F2.
+
+        Returns:
+            dict: Metric values
+        """
+        # Flatten all pixels
+        y_true_flat = y_true.flatten()
+        y_pred_flat = y_pred.flatten()
+
+        return {
+            "accuracy": accuracy_score(y_true_flat, y_pred_flat),
+            "precision": precision_score(y_true_flat, y_pred_flat, zero_division=0),
+            "recall": recall_score(y_true_flat, y_pred_flat, zero_division=0),
+            f"f{beta}_score": fbeta_score(y_true_flat, y_pred_flat, beta=beta, zero_division=0)
+        }
+
     def compute_dice(self, y_true, y_pred):
-        intersection = np.sum(y_true * y_pred)
-        union = np.sum(y_true) + np.sum(y_pred)
-        return (2. * intersection + self.epsilon) / (union + self.epsilon)
+        # intersection = np.sum(y_true * y_pred)
+        # union = np.sum(y_true) + np.sum(y_pred)
+        # return (2. * intersection + self.epsilon) / (union + self.epsilon)
+
+        print("y_true_f shape:", y_true_f.shape)
+        print("y_pred_f shape:", y_pred_f.shape)
+
+        y_true = tf.cast(y_true, tf.float32)
+        y_pred = tf.cast(y_pred, tf.float32)
+        y_true_f = tf.keras.backend.flatten(y_true)
+        y_pred_f = tf.keras.backend.flatten(y_pred)
+        intersection = tf.reduce_sum(y_true_f * y_pred_f)
+        return (2. * intersection + self.epsilon) / (
+                tf.reduce_sum(y_true_f) + tf.reduce_sum(y_pred_f) + self.epsilon)
 
     def compute_iou(self, y_true, y_pred):
-        intersection = np.sum(y_true * y_pred)
-        union = np.sum(y_true) + np.sum(y_pred) - intersection
+        # intersection = np.sum(y_true * y_pred)
+        # union = np.sum(y_true) + np.sum(y_pred) - intersection
+        # return (intersection + self.epsilon) / (union + self.epsilon)
+        y_true = tf.cast(y_true, tf.float32)
+        y_pred = tf.cast(y_pred, tf.float32)
+        y_true_f = tf.keras.backend.flatten(y_true)
+        y_pred_f = tf.keras.backend.flatten(y_pred)
+        intersection = tf.reduce_sum(y_true_f * y_pred_f)
+        union = tf.reduce_sum(y_true_f) + tf.reduce_sum(y_pred_f) - intersection
         return (intersection + self.epsilon) / (union + self.epsilon)
 
     def evaluate(self, X_test, Y_test, patient_ids=None):
@@ -114,3 +157,49 @@ class SegmentationEvaluator:
         plt.savefig(f'dice_scores_output_{ppid}.png')
         if debug:
             plt.show()
+
+    def visualize_masked(self, X, Y_true, Y_pred_binary, dice_scores, num_examples=5, seed=None):
+        """
+        Visualize predictions alongside ground truth and overlays.
+
+        Args:
+            X (np.ndarray): Input CT images.
+            Y_true (np.ndarray): Ground truth segmentation masks.
+            Y_pred_binary (np.ndarray): Binary predicted masks.
+            dice_scores (list): Dice scores per slice.
+            num_examples (int): Number of examples to show.
+            seed (int or None): Random seed for reproducibility.
+        """
+        ppid = os.getppid()
+        if seed is not None:
+            np.random.seed(seed)
+
+        indices = np.random.choice(len(X), num_examples, replace=False)
+        plt.figure(figsize=(12, num_examples * 3))
+        for i, idx in enumerate(indices):
+            plt.subplot(num_examples, 4, i * 4 + 1)
+            plt.imshow(X[idx].squeeze(), cmap='gray')
+            plt.title("Masked Slice")
+            plt.axis('off')
+
+            plt.subplot(num_examples, 4, i * 4 + 2)
+            plt.imshow(Y_true[idx].squeeze(), cmap='gray')
+            plt.title("Ground Truth")
+            plt.axis('off')
+
+            plt.subplot(num_examples, 4, i * 4 + 3)
+            plt.imshow(Y_pred_binary[idx].squeeze(), cmap='gray')
+            plt.title(f"Prediction\nDice: {dice_scores[idx]:.3f}")
+            plt.axis('off')
+
+            plt.subplot(num_examples, 4, i * 4 + 4)
+            plt.imshow(Y_true[idx].squeeze(), cmap='gray')
+            plt.imshow(Y_pred_binary[idx].squeeze(), alpha=0.3, cmap='Reds')
+            plt.title("Overlay")
+            plt.axis('off')
+
+        plt.tight_layout()
+        plt.savefig(f'dice_scores_output_{ppid}.png')
+        if debug:
+            plt.show()
+
