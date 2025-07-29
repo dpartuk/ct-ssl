@@ -81,7 +81,7 @@ def main(args):
     model_runner = UNETRunner(dataset_train)
     model_runner.train()
     model_runner.save_run()
-    model_runner.load_model()
+    # model_runner.load_model()
 
     # Prediction
     model_evaluator = UNETEvaluator(dataset_train, model_runner)

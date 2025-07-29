@@ -7,9 +7,18 @@ from UNet_Model.unet_segmentation_pipeline import UNetSegmentationPipeline
 from ct_config import debug, epochs, finetune_epochs ,batch_size, number_of_ct_patients
 
 class UNETRunner:
-    def __init__(self, dataset_train):
+    def __init__(self, dataset_train, finetune=False):
         # Build and train model
-        self.pipeline = UNetSegmentationPipeline(input_shape=(256, 256, 1))
+
+        if finetune: # Transfer Learning
+            epoch_num = epochs
+            encoder_path = f"UNet_Model/saved_models/encoder_ssl_ct_liver_{number_of_ct_patients}_{epoch_num}.keras"
+            self.pipeline = UNetSegmentationPipeline(input_shape=(256, 256, 1), encoder_weights_path=encoder_path,
+                                                freeze_encoder=True)
+        else:
+            self.pipeline = UNetSegmentationPipeline(input_shape=(256, 256, 1))
+
+
 
         self.pipeline.summary()
 
@@ -71,6 +80,14 @@ class UNETRunner:
 
         self.pipeline = UNetSegmentationPipeline.load(model_name)
         self.pipeline.summary()
+
+    def enable_finetuning(self, finetune=False):
+        if finetune:
+            # Finetuning
+            for layer in self.pipeline.model.layers:
+                layer.trainable = True
+
+            self.pipeline.summary()
 
     def plot_training_history(self, history_dict, metrics=("loss", "dice_coef", "iou_metric")):
         """

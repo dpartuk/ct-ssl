@@ -55,6 +55,7 @@ class CTDataset(Dataset):
 
     def load_dataset(self, name):
 
+        print('Loading dataset...', name)
         data = np.load(name, allow_pickle=True)
 
         X_all = data["X_all"]

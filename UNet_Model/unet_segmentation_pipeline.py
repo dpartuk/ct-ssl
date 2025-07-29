@@ -336,6 +336,10 @@ class UNetSegmentationPipeline:
         """
         Print a summary of the model architecture.
         """
+        # Print layers status
+        for layer in self.model.layers:
+            print(layer.name, layer.trainable)
+
         return self.model.summary()
 
     def save(self, filepath):

@@ -45,7 +45,7 @@ class UNETEvaluator:
 
 
 
-    def evaluate(self):
+    def evaluate(self, finetune = False):
         print("Evaluating...")
         evaluator = SegmentationEvaluator(self.model_runner.pipeline)
 
@@ -60,7 +60,10 @@ class UNETEvaluator:
         dice_scores = [evaluator.compute_dice(self.Y_test[i], Y_pred_binary[i])
                        for i in range(len(self.Y_test))]
 
-        evaluator.visualize(self.X_test, self.Y_test, Y_pred_binary, dice_scores, num_examples=8)
+        if finetune:
+            evaluator.visualize(self.X_test, self.Y_test, Y_pred_binary, dice_scores, num_examples=8)
+        else:
+            evaluator.visualize_masked(self.X_test, self.Y_test, Y_pred_binary, dice_scores, num_examples=8)
 
     def limit_test_patients(self, X_test_all, Y_test_all, patient_ids, max_patients=1):
         """

@@ -12,7 +12,7 @@ import ct_config
 # from unet_runner import UNETRunner
 # from unet_prediction import UNETEvaluator
 from UNet_Model.unet_segmentation_pipeline import UNetSegmentationPipeline
-from UNet_Model.segmentation_evaluator import SegmentationEvaluator
+from UNet_Model.orig_segmentation_evaluator import SegmentationEvaluator
 
 import matplotlib.pyplot as plt
 import numpy as np

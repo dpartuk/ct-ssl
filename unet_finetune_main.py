@@ -65,16 +65,33 @@ def main(args):
     if ct_config.print_smaples:
         dataset.print_samples()
 
-    # Training
-    model_runner = UNETRunner(dataset)
-    model_runner.load_model()
+    # Transfer Learning Training
+    model_runner = UNETRunner(dataset, finetune=True)
+    # model_runner.load_model()
     model_runner.train(finetune = True)
-    model_runner.save_run(finetune = True)
-    model_runner.load_model(finetune = True)
+    # model_runner.save_run(finetune = True)
+    # model_runner.load_model(finetune = True)
 
     # Prediction
     model_evaluator = UNETEvaluator(dataset, model_runner, finetune = True)
     model_evaluator.evaluate()
+
+    # # Print layers status
+    # for layer in pipeline.model.layers:
+    #     print(layer.name, layer.trainable)
+
+    # Finetuning
+    model_runner.enable_finetuning(finetune=True)
+    # for layer in pipeline.model.layers:
+    #     layer.trainable = True
+    #
+    # pipeline.summary()
+
+    # Train Finetuning
+    model_runner.train(finetune=True)
+    model_runner.save_run(finetune=True)
+
+
 
 
 

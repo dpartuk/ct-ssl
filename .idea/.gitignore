@@ -1,0 +1,14 @@
+# Default ignored files
+/shelf/
+/workspace.xml
+# Editor-based HTTP Client requests
+/httpRequests/
+# Datasource local storage ignored files
+/dataSources/
+/dataSources.local.xml
+# datasets and models
+/datasets
+/UNet_Model/saved_models
+/UNet_Model/saved_results
+/training_history*
+/dice_scores*
