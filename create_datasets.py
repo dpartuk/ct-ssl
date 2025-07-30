@@ -10,7 +10,7 @@ def main():
     print(f'job dir: {job_dir}')
 
     root = 'ct_images/'
-    number_of_ct_patients = 131
+    number_of_ct_patients = 121
 
     liver_images_path = f"{root}Task03_Liver/imagesTr/"
     liver_labels_path = f"{root}Task03_Liver/labelsTr/"
